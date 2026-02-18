@@ -1,0 +1,18 @@
+[
+	{
+		"id": "login-feature-001",
+		"file": "intent_specs/login-feature.json",
+		"description": "User wants to add a login feature with username and password authentication.",
+		"inputs": ["username", "password"],
+		"outputs": ["authentication token"],
+		"constraints": ["Password must be hashed before storage", "Authentication token must expire after 24 hours"]
+	},
+	{
+		"id": "profile-update-002",
+		"file": "intent_specs/profile-update.json",
+		"description": "User wants to allow profile updates including name and email.",
+		"inputs": ["name", "email"],
+		"outputs": ["updated profile object"],
+		"constraints": ["Email must be validated", "Name cannot be empty"]
+	}
+]
