@@ -1,7 +1,9 @@
 // src/hooks/index.ts
-import { registerTool, ToolContext, ToolResult } from "../hooks/host-api" // adapt to Roo-Code host API
+import { registerTool, ToolContext } from "../hooks/host-api" // adapt to Roo-Code host API
 import { preHookInterceptor } from "./preHook"
 import { selectActiveIntentTool } from "./selectActiveIntent"
+import { applyPatchTool } from "../tools/applyPatch"
+import { recordIntentTraceTool } from "../tools/recordIntentTrace"
 
 // Register hooks and tools. Adapt registration to Roo-Code extension APIs.
 export function registerHooks() {
@@ -10,6 +12,20 @@ export function registerHooks() {
 		name: "select_active_intent",
 		description: "Select an active intent by id and return intent_context XML block",
 		handler: selectActiveIntentTool,
+	})
+
+	// Register the apply_patch tool
+	registerTool({
+		name: "apply_patch",
+		description: "Apply a set of file edits to the workspace (JSON edits array).",
+		handler: applyPatchTool,
+	})
+
+	// Register the record_intent_trace tool
+	registerTool({
+		name: "record_intent_trace",
+		description: "Record an intent trace entry to .orchestration/intents_traces/",
+		handler: recordIntentTraceTool,
 	})
 
 	// Register a global pre-hook interceptor for outgoing LLM prompts
