@@ -1,21 +1,8 @@
+// File: src/extension.ts
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
 import * as fs from "fs"
 import * as path from "path"
-
-// Load environment variables from .env file
-// The extension-level .env is optional (not shipped in production builds).
-// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
-// a noisy [MISSING_ENV_FILE] error to the extension host console.
-const envPath = path.join(__dirname, "..", ".env")
-if (fs.existsSync(envPath)) {
-	try {
-		dotenvx.config({ path: envPath })
-	} catch (e) {
-		// Best-effort only: never fail extension activation due to optional env loading.
-		console.warn("Failed to load environment variables:", e)
-	}
-}
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -50,13 +37,23 @@ import {
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 
-/**
- * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
- *
- * Inspired by:
- *  - https://github.com/microsoft/vscode-webview-ui-toolkit-samples/tree/main/default/weather-webview
- *  - https://github.com/microsoft/vscode-webview-ui-toolkit-samples/tree/main/frameworks/hello-world-react-cra
- */
+// --- NEW: import our hooks registration and runtime pre-prompt runner (adjust path if you placed hooks elsewhere) ---
+import { registerHooks } from "./hooks"
+import { runPrePromptHooks } from "./hooks/host-api"
+
+// Load environment variables from .env file
+// The extension-level .env is optional (not shipped in production builds).
+// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
+// a noisy [MISSING_ENV_FILE] error to the extension host console.
+const envPath = path.join(__dirname, "..", ".env")
+if (fs.existsSync(envPath)) {
+	try {
+		dotenvx.config({ path: envPath })
+	} catch (e) {
+		// Best-effort only: never fail extension activation due to optional env loading.
+		console.warn("Failed to load environment variables:", e)
+	}
+}
 
 let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
@@ -66,10 +63,6 @@ let authStateChangedHandler: ((data: { state: AuthState; previousState: AuthStat
 let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
-/**
- * Check if we should auto-open the Roo Code sidebar after switching to a worktree.
- * This is called during extension activation to handle the worktree auto-open flow.
- */
 async function checkWorktreeAutoOpen(
 	context: vscode.ExtensionContext,
 	outputChannel: vscode.OutputChannel,
@@ -350,6 +343,88 @@ export async function activate(context: vscode.ExtensionContext) {
 		)
 	}
 
+	// --- NEW: Register our hooks and tools for Phase 1 handshake ---
+	try {
+		registerHooks()
+		outputChannel.appendLine("[Hooks] Intent-handshake hooks registered")
+	} catch (err) {
+		outputChannel.appendLine(
+			`[Hooks] Failed to register intent-handshake hooks: ${err instanceof Error ? err.message : String(err)}`,
+		)
+	}
+
+	// --- NEW: Attempt to wrap the extension's LLM send pipeline with pre-prompt hooks ---
+	// This is a defensive, best-effort wrapper. It tries to find a send-like method on
+	// common LLM client locations and wrap it so runPrePromptHooks(payload, ctx) runs
+	// before the prompt is sent to the model. Adjust the property names to match your
+	// actual LLM client if needed.
+	try {
+		// Build a small helper to wrap a client method
+		const tryWrapClientSend = (client: any, clientName = "llmClient") => {
+			if (!client || typeof client !== "object") return false
+			const sendCandidates = ["send", "request", "call", "complete", "createCompletion"]
+			for (const method of sendCandidates) {
+				if (typeof client[method] === "function") {
+					const original = client[method].bind(client)
+					client[method] = async (payload: any, ctx?: any) => {
+						// Provide a minimal ctx with workspaceRoot for pre-hook use
+						const hookCtx = ctx ?? { workspaceRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath }
+						// Run pre-prompt hooks; if they throw, bubble the error so the host can show it
+						const processedPayload = await runPrePromptHooks(payload, hookCtx)
+						return original(processedPayload, ctx)
+					}
+					outputChannel.appendLine(`[Hooks] Wrapped ${clientName}.${method} with pre-prompt hooks`)
+					return true
+				}
+			}
+			return false
+		}
+
+		// Try common locations where Roo-Code might keep an LLM client
+		const candidates = [
+			(provider as any).llm,
+			(provider as any).llmClient,
+			(provider as any).apiClient,
+			(provider as any).modelClient,
+			(provider as any).openAiClient,
+			(global as any).LLMService,
+			(global as any).llmClient,
+		]
+
+		let wrapped = false
+		for (const c of candidates) {
+			if (tryWrapClientSend(c, "providerCandidate")) {
+				wrapped = true
+				break
+			}
+		}
+
+		// If not wrapped yet, try to find any object on provider with a send-like method
+		if (!wrapped) {
+			for (const key of Object.keys(provider as any)) {
+				try {
+					const candidate = (provider as any)[key]
+					if (tryWrapClientSend(candidate, `provider.${key}`)) {
+						wrapped = true
+						break
+					}
+				} catch {
+					// ignore property access errors
+				}
+			}
+		}
+
+		if (!wrapped) {
+			outputChannel.appendLine(
+				"[Hooks] No LLM client found to wrap automatically. If Roo-Code uses a custom LLM client, add an explicit wrapper at the call site.",
+			)
+		}
+	} catch (err) {
+		outputChannel.appendLine(
+			`[Hooks] Failed to wrap LLM client for pre-prompt hooks: ${err instanceof Error ? err.message : String(err)}`,
+		)
+	}
+
 	registerCommands({ context, outputChannel, provider })
 
 	/**
@@ -361,10 +436,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	 * sources, and works by claiming an uri-scheme for which your provider then
 	 * returns text contents. The scheme must be provided when registering a
 	 * provider and cannot change afterwards.
-	 *
-	 * Note how the provider doesn't create uris for virtual documents - its role
-	 * is to provide contents given such an uri. In return, content providers are
-	 * wired into the open document logic so that providers are always considered.
 	 *
 	 * https://code.visualstudio.com/api/extension-guides/virtual-documents
 	 */
