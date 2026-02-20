@@ -1,0 +1,84 @@
+# .orchestration/active_intents.yaml
+active_intents:
+  - id: "INT-001"
+    name: JWT Authentication Migration
+    status: IN_PROGRESS
+    owned_scope:
+      - src/auth/**
+      - src/middleware/jwt.ts
+    constraints:
+      - Must not use external auth providers
+      - Must maintain backward compatibility with Basic Auth
+    acceptance_criteria:
+      - All unit tests in tests/auth/ pass
+
+  - id: "INT-002"
+    name: Refactor Auth Middleware
+    status: PLANNED
+    owned_scope:
+      - src/auth/middleware.ts
+    constraints:
+      - Preserve existing authentication flows
+    acceptance_criteria:
+      - Integration tests pass without regression
+
+  - id: "INT-003"
+    name: AI-Native Git Layer Implementation
+    status: PLANNED
+    owned_scope:
+      - src/core/git/**
+    constraints:
+      - Must distinguish AST_REFACTOR vs INTENT_EVOLUTION
+      - Must generate SHA-256 hashes for file mutations
+    acceptance_criteria:
+      - agent_trace.jsonl correctly maps intent IDs to content hashes
+
+  - id: "INT-004"
+    name: Context Injection Hook
+    status: PLANNED
+    owned_scope:
+      - src/hooks/contextHook.ts
+    constraints:
+      - Must block execution if no valid intent ID is declared
+    acceptance_criteria:
+      - Pre-hook successfully injects intent context before tool execution
+
+  - id: "INT-005"
+    name: Security Validation Hook
+    status: PLANNED
+    owned_scope:
+      - src/hooks/securityHook.ts
+    constraints:
+      - Must enforce scope validation against owned_scope
+    acceptance_criteria:
+      - Destructive commands require explicit approval
+
+  - id: "INT-006"
+    name: Traceability Logging
+    status: PLANNED
+    owned_scope:
+      - src/hooks/traceabilityHook.ts
+    constraints:
+      - Must include intent_id, mutation_class, file path, and hash
+    acceptance_criteria:
+      - .orchestration/agent_trace.jsonl contains complete mutation records
+
+  - id: "INT-007"
+    name: Governance Policy Enforcement
+    status: PLANNED
+    owned_scope:
+      - src/core/governance/**
+    constraints:
+      - Must reject commands outside declared scope
+    acceptance_criteria:
+      - Governance violations are blocked and logged
+
+  - id: "INT-008"
+    name: Intent Evolution Tracking
+    status: PLANNED
+    owned_scope:
+      - .orchestration/intent_map.md
+    constraints:
+      - Must distinguish AST_REFACTOR vs INTENT_EVOLUTION
+    acceptance_criteria:
+      - Evolution history is correctly serialized

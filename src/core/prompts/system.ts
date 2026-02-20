@@ -1,3 +1,4 @@
+// File: src/core/prompts/system.ts
 import * as vscode from "vscode"
 
 import { type ModeConfig, type PromptComponent, type CustomModePrompts, type TodoItem } from "@roo-code/types"
@@ -24,6 +25,8 @@ import {
 	markdownFormattingSection,
 	getSkillsSection,
 } from "./sections"
+
+import { getSystemPrompt } from "./systemPrompt" // <-- Phase 1 handshake protocol wrapper
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -88,7 +91,7 @@ ${markdownFormattingSection()}
 
 ${getSharedToolUseSection()}${toolsCatalog}
 
-	${getToolUseGuidelinesSection()}
+    ${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
@@ -106,7 +109,8 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 	settings,
 })}`
 
-	return basePrompt
+	// Prepend the Phase 1 handshake protocol to the generated base prompt
+	return getSystemPrompt(basePrompt)
 }
 
 export const SYSTEM_PROMPT = async (
