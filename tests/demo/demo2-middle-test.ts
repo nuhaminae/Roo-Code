@@ -1,7 +1,7 @@
 // scripts/demo-middle-test.ts
-import { registerHooks } from "../src/hooks"
-import { callTool, runPrePromptHooks } from "../src/hooks/host-api"
-import { sendToModel } from "../src/services/llmWrapper"
+import { registerHooks } from "../../src/hooks"
+import { callTool, runPrePromptHooks } from "../../src/hooks/host-api"
+import { sendToModel } from "../../src/services/llmWrapper"
 
 async function run() {
 	const ctx = { workspaceRoot: process.cwd() }
