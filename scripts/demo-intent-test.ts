@@ -24,8 +24,8 @@ async function run() {
 		console.error("Pre-hook blocked as expected:", err)
 	}
 
-	console.log("Calling select_active_intent('INT-002')...")
-	const res = await callTool("select_active_intent", { intent_id: "INT-002" }, ctx)
+	console.log("Calling select_active_intent('INT-001')...")
+	const res = await callTool("select_active_intent", { intent_id: "INT-001" }, ctx)
 	console.log("select_active_intent raw result:", res)
 
 	// Normalize and attach the tool result into payload.toolResults so preHookInterceptor can see it.
