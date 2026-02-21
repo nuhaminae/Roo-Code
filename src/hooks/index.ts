@@ -6,6 +6,8 @@ import { applyPatchTool } from "./tools/applyPatch"
 import { recordIntentTraceTool } from "./tools/recordIntentTrace"
 import { stagePatchTool } from "./tools/stagePatch"
 import { approvePatchTool } from "./tools/approvePatch"
+import { listStagedChangesTool } from "./tools/listStagedChanges"
+import { diffStagedChangeTool } from "./tools/diffStagedChange"
 
 // Register hooks and tools. Adapt registration to Roo-Code extension APIs.
 export function registerHooks() {
@@ -42,6 +44,20 @@ export function registerHooks() {
 		name: "approve_patch",
 		description: "Approve and apply staged changes to the workspace",
 		handler: approvePatchTool,
+	})
+
+	// Register the list_staged_changes tool
+	registerTool({
+		name: "list_staged_changes",
+		description: "List all staged changes awaiting review",
+		handler: listStagedChangesTool,
+	})
+
+	// Register the diff_staged_change tool
+	registerTool({
+		name: "diff_staged_change",
+		description: "Show a simple diff between a staged file and its current workspace version",
+		handler: diffStagedChangeTool,
 	})
 
 	// Register a global pre-hook interceptor for outgoing LLM prompts
