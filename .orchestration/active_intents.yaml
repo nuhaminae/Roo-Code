@@ -1,3 +1,5 @@
+# .orchestration/active_intents.yaml
+
 active_intents:
   - id: "INT-001"
     name: JWT Authentication Migration
@@ -9,7 +11,7 @@ active_intents:
       - Must not use external auth providers
       - Must maintain backward compatibility with Basic Auth
     acceptance_criteria:
-      - All unit tests in tests/auth/ pass
+      - All unit tests in tests/demo/ pass
 
   - id: "INT-002"
     name: Refactor Auth Middleware
