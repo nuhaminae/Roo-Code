@@ -1,11 +1,10 @@
-# .orchestration/active_intents.yaml
 active_intents:
   - id: "INT-001"
     name: JWT Authentication Migration
     status: IN_PROGRESS
     owned_scope:
-      - src/auth/**
-      - src/middleware/jwt.ts
+      - src/hooks/selectActiveIntent.ts
+      - src/hooks/preHook.ts
     constraints:
       - Must not use external auth providers
       - Must maintain backward compatibility with Basic Auth
@@ -16,7 +15,8 @@ active_intents:
     name: Refactor Auth Middleware
     status: PLANNED
     owned_scope:
-      - src/auth/middleware.ts
+      - src/hooks/index.ts
+      - src/hooks/host-api.ts
     constraints:
       - Preserve existing authentication flows
     acceptance_criteria:
@@ -26,7 +26,9 @@ active_intents:
     name: AI-Native Git Layer Implementation
     status: PLANNED
     owned_scope:
-      - src/core/git/**
+      - src/hooks/tools/applyPatch.ts
+      - src/hooks/tools/approvePatch.ts
+      - src/hooks/tools/stagePatch.ts
     constraints:
       - Must distinguish AST_REFACTOR vs INTENT_EVOLUTION
       - Must generate SHA-256 hashes for file mutations
@@ -38,6 +40,7 @@ active_intents:
     status: PLANNED
     owned_scope:
       - src/hooks/contextHook.ts
+      - src/hooks/selectActiveIntent.ts
     constraints:
       - Must block execution if no valid intent ID is declared
     acceptance_criteria:
@@ -48,6 +51,7 @@ active_intents:
     status: PLANNED
     owned_scope:
       - src/hooks/securityHook.ts
+      - src/hooks/preHook.ts
     constraints:
       - Must enforce scope validation against owned_scope
     acceptance_criteria:
@@ -57,7 +61,9 @@ active_intents:
     name: Traceability Logging
     status: PLANNED
     owned_scope:
-      - src/hooks/traceabilityHook.ts
+      - src/hooks/tools/recordIntentTrace.ts
+      - src/hooks/tools/diffStagedChange.ts
+      - src/hooks/tools/listStagedChanges.ts
     constraints:
       - Must include intent_id, mutation_class, file path, and hash
     acceptance_criteria:
@@ -68,6 +74,7 @@ active_intents:
     status: PLANNED
     owned_scope:
       - src/core/governance/**
+      - src/extension.ts
     constraints:
       - Must reject commands outside declared scope
     acceptance_criteria:
@@ -78,6 +85,7 @@ active_intents:
     status: PLANNED
     owned_scope:
       - .orchestration/intent_map.md
+      - src/services/llmWrapper.ts
     constraints:
       - Must distinguish AST_REFACTOR vs INTENT_EVOLUTION
     acceptance_criteria:
