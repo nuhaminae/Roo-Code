@@ -6,8 +6,8 @@ async function run() {
 	const ctx = { workspaceRoot: process.cwd() }
 	registerHooks()
 
-	console.log("Selecting intent INT-003...")
-	await callTool("select_active_intent", { intent_id: "INT-003" }, ctx)
+	console.log("Selecting intent INT-001...")
+	await callTool("select_active_intent", { intent_id: "INT-001" }, ctx)
 
 	// Simulated edits from LLM
 	const edits = [
@@ -22,7 +22,7 @@ async function run() {
 	console.log("Approving staged edits...")
 	const approveRes = await callTool(
 		"approve_patch",
-		{ stagedFiles: stageRes.value?.stagedFiles, intent_id: "INT-003" },
+		{ stagedFiles: stageRes.value?.stagedFiles, intent_id: "INT-001" },
 		ctx,
 	)
 
@@ -32,7 +32,7 @@ async function run() {
 	const traceRes = await callTool(
 		"record_intent_trace",
 		{
-			intent_id: "INT-003",
+			intent_id: "INT-001",
 			action: "approve_patch",
 			details: approveRes,
 		},
