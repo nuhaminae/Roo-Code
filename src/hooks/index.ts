@@ -4,6 +4,8 @@ import { preHookInterceptor } from "./preHook"
 import { selectActiveIntentTool } from "./selectActiveIntent"
 import { applyPatchTool } from "./tools/applyPatch"
 import { recordIntentTraceTool } from "./tools/recordIntentTrace"
+import { stagePatchTool } from "./tools/stagePatch"
+import { approvePatchTool } from "./tools/approvePatch"
 
 // Register hooks and tools. Adapt registration to Roo-Code extension APIs.
 export function registerHooks() {
@@ -26,6 +28,20 @@ export function registerHooks() {
 		name: "record_intent_trace",
 		description: "Record an intent trace entry to .orchestration/intents_traces/",
 		handler: recordIntentTraceTool,
+	})
+
+	// Register the stage_patch tool
+	registerTool({
+		name: "stage_patch",
+		description: "Stage file edits under .orchestration/staged_changes/ for review",
+		handler: stagePatchTool,
+	})
+
+	// Register the approve_patch tool
+	registerTool({
+		name: "approve_patch",
+		description: "Approve and apply staged changes to the workspace",
+		handler: approvePatchTool,
 	})
 
 	// Register a global pre-hook interceptor for outgoing LLM prompts
