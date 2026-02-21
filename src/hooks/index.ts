@@ -2,8 +2,8 @@
 import { registerTool, ToolContext } from "../hooks/host-api" // adapt to Roo-Code host API
 import { preHookInterceptor } from "./preHook"
 import { selectActiveIntentTool } from "./selectActiveIntent"
-import { applyPatchTool } from "../tools/applyPatch"
-import { recordIntentTraceTool } from "../tools/recordIntentTrace"
+import { applyPatchTool } from "./tools/applyPatch"
+import { recordIntentTraceTool } from "./tools/recordIntentTrace"
 
 // Register hooks and tools. Adapt registration to Roo-Code extension APIs.
 export function registerHooks() {
