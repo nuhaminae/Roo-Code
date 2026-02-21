@@ -1,6 +1,6 @@
 // File: scripts/demo-intent-test.ts
-import { callTool, runPrePromptHooks, listRegisteredTools } from "../src/hooks/host-api"
-import { registerHooks } from "../src/hooks" // ensure path is correct
+import { callTool, runPrePromptHooks, listRegisteredTools } from "../../src/hooks/host-api"
+import { registerHooks } from "../../src/hooks" // ensure path is correct
 import * as path from "path"
 
 const payload: any = {

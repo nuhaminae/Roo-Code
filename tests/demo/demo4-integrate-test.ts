@@ -1,6 +1,6 @@
 // scripts/demo4-integrate-test.ts
-import { registerHooks } from "../src/hooks"
-import { callTool } from "../src/hooks/host-api"
+import { registerHooks } from "../../src/hooks"
+import { callTool } from "../../src/hooks/host-api"
 
 async function run() {
 	const ctx = { workspaceRoot: process.cwd() }
