@@ -55,3 +55,13 @@ qdrant_storage/
 plans/
 
 roo-cli-*.tar.gz*
+
+# Test artifacts
+src/bar.ts
+src/foo.ts
+tests/bar.test.ts
+tests/foo.test.ts
+
+# Orchestration artifacts
+.orchestration/intents_traces*
+.orchestration/staged_changes*
