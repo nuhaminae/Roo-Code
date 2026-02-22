@@ -67,7 +67,7 @@ active_intents:
       - src/hooks/tools/diffStagedChange.ts
       - src/hooks/tools/listStagedChanges.ts
     constraints:
-      - Must include intent_id, mutation_class, file path, and hash
+      - Must include intent_id, mutation_class, relative file path, and partialhash
     acceptance_criteria:
       - .orchestration/agent_trace.jsonl contains complete mutation records
 
