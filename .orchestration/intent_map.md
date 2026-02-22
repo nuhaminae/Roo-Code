@@ -13,7 +13,7 @@ based on `.orchestration/active_intents.yaml`.
     - Status: IN_PROGRESS
     - Scope: `src/hooks/selectActiveIntent.ts`, `src/hooks/preHook.ts`
     - Constraints: Must not use external auth providers; Must maintain backward compatibility with Basic Auth
-    - Acceptance Criteria: All unit tests in `tests/auth/` pass
+    - Acceptance Criteria: All unit tests in `tests/demo/` pass
 
 - **INT-002** → _Refactor Auth Middleware_
 
